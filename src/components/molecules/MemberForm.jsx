@@ -1,36 +1,29 @@
-import React, { useState, useEffect, useNavigate } from 'react';
-import { Form, Row, Col } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Form } from 'react-bootstrap';
 import CustomButton from '../atoms/Button';
-import { toast } from 'react-toastify';
-import apiClient from '../../axiosConfig';
 
 const MemberForm = ({ onSubmit, initialData = {} }) => {
-  const [name, setName] = useState(initialData.name || '');
-  const [email, setEmail] = useState(initialData.email || '');
-  const [noHp, setnoHp] = useState(initialData.noHp || '');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [noHp, setnoHp] = useState('');
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
+    // Populate form fields when initialData is updated
     if (initialData.id) {
-      apiClient.get(`/User/${initialData.id}`)
-        .then(response => {
-          const { name, email, noHp } = response.data;
-          setName(name);
-          setEmail(email);
-          setnoHp(noHp);
-        })
-        .catch(error => {
-          toast.error('Failed to load member data.');
-        });
+      setName(initialData.name || '');
+      setEmail(initialData.email || '');
+      setnoHp(initialData.noHp || '');
     }
-  }, [initialData.id]);
+  }, [initialData]);
 
   const validate = () => {
     const newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!name) newErrors.name = 'Full Name is required';
-    if (!email || !emailRegex.test(email)) newErrors.email = 'Invalid email format';
+    if (!name) newErrors.name = 'Full Name is required.';
+    if (!email || !emailRegex.test(email)) newErrors.email = 'Invalid email format.';
+    if (!noHp) newErrors.noHp = 'Phone Number is required.';
 
     return newErrors;
   };
@@ -45,25 +38,8 @@ const MemberForm = ({ onSubmit, initialData = {} }) => {
 
     const memberData = { name, email, noHp };
 
-    if (initialData.id) {
-      apiClient.put(`/User/${initialData.id}`, memberData)
-        .then(() => {
-          toast.success('Member updated successfully!');
-          onSubmit(memberData);
-        })
-        .catch(() => {
-          toast.error('Failed to update member.');
-        });
-    } else {
-      apiClient.post('/User', memberData)
-        .then(() => {
-          toast.success('Member created successfully!');
-          onSubmit(memberData);
-        })
-        .catch(() => {
-          toast.error('Failed to create member.');
-        });
-    }
+    // Call the parent onSubmit with the member data
+    onSubmit(memberData);
   };
 
   return (
@@ -90,15 +66,15 @@ const MemberForm = ({ onSubmit, initialData = {} }) => {
         <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
       </Form.Group>
 
-      <Form.Group controlId="phone">
+      <Form.Group controlId="noHp">
         <Form.Label>Phone Number</Form.Label>
         <Form.Control
-          type="number"
+          type="text"
           value={noHp}
           onChange={(e) => setnoHp(e.target.value)}
-          isInvalid={!!errors.phone}
+          isInvalid={!!errors.noHp}
         />
-        <Form.Control.Feedback type="invalid">{errors.phone}</Form.Control.Feedback>
+        <Form.Control.Feedback type="invalid">{errors.noHp}</Form.Control.Feedback>
       </Form.Group>
 
       <CustomButton type="submit" variant="primary">
